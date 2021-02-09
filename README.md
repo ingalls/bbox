@@ -1,5 +1,7 @@
 <h1 align='center'>BBOX Viz</h1>
 
+<p align='center'><a href='http://ingalls.ca/bbox/'>ingalls.ca/bbox</a></p>
+
 <p align='center'>Visualize Geojson bounds parameters in the browser</p>
 
 ## Development
