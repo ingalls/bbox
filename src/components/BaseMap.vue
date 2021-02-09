@@ -1,7 +1,7 @@
 <template>
     <div class='col col--12 w-full absolute top bottom'>
-        <div class='absolute top right z1'>
-            <input class='input'/>
+        <div class='absolute top left z1 bg-white px12 py12'>
+            <input v-model='bounds' class='input w600' placeholder='GeoJSON Bounding Box'/>
         </div>
 
         <div id="map" class='w-full h-full'></div>
@@ -17,25 +17,33 @@ export default {
     name: 'BaseMap',
     data: function() {
         return {
-            bounds: false,
+            bounds: '',
             map: ''
         }
     },
     watch: {
         bounds: function() {
-            if (!this.bounds) {
+            if (!this.map) return;
+
+            const bounds = this.bounds.trim().split(',').map((bound) => {
+                return Number(bound);
+            });
+
+            if (bounds.length === 4) {
+                this.map.getSource('bounds').setData({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: poly(bounds).geometry
+                });
+
+                this.map.fitBounds(bounds)
+            } else {
                 this.map.getSource('bounds').setData({
                     type: 'FeatureCollection',
                     features: []
                 });
-            } else {
-                this.map.getSource('bounds').setData({
-                    type: 'Feature',
-                    properties: {},
-                    geometry: poly(this.bounds)
-                });
             }
-            this.$emit('bounds', this.bounds);
+            this.$emit('bounds', bounds);
         }
     },
     mounted: function() {
