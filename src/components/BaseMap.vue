@@ -1,9 +1,18 @@
 <template>
     <div class='col col--12 w-full absolute top bottom'>
         <div class='absolute top left z1 bg-white px12 py12'>
-            <input :disabled='!map' v-model='rawbounds' class='input w600 fl' placeholder='GeoJSON Bounding Box' :class='{
+            <input :disabled='!map' v-model='rawbounds' class='input w600 fl h36' placeholder='GeoJSON Bounding Box' :class='{
                 "border border--red": !isValid,
             }'/>
+
+            <template v-if='showTiles'>
+                <input v-model='zoom' class='input w60 fr h36 ml6' placeholder='z' :class='{
+                    "border border--red": !isTileValid,
+                }'/>
+            </template>
+            <button @click='showTiles = !showTiles' class='btn btn--stroke round fr h36 ml6 px12'>
+                <svg class='icon'><use xlink:href='#icon-tileset'/></svg>
+            </button>
             <button @click='fitBounds' class='btn btn--stroke round fr h36 ml6 px12'>
                 <svg class='icon'><use xlink:href='#icon-fullscreen'/></svg>
             </button>
@@ -17,11 +26,14 @@
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import poly from '@turf/bbox-polygon';
+import tc from '@mapbox/tile-cover';
 
 export default {
     name: 'BaseMap',
     data: function() {
         return {
+            showTiles: false,
+            zoom: 0,
             initial: true,
             rawbounds: '',
             bounds: [],
@@ -39,9 +51,29 @@ export default {
             if (bounds.length !== 4) return false;
 
             return true;
+        },
+        isTileValid: function() {
+            return !isNaN(parseInt(this.zoom));
         }
     },
     watch: {
+        showTiles: function() {
+            if (!this.showtiles) {
+                this.map.addSource('tiles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+            }
+        },
+        zoom: function() {
+            const tiles = tc.geojson(poly(this.bounds).geometry, {
+                min_zoom: this.zoom,
+                max_zoom: this.zoom
+            });
+
+            console.error(tiles)
+            this.map.getSource('tiles').setData(tiles);
+        },
         rawbounds: function() {
             this.initial = false;
             if (!this.isValid) return;
@@ -90,10 +122,12 @@ export default {
             this.map.on('load', () => {
                 this.map.addSource('bounds', {
                     type: 'geojson',
-                    data: {
-                        type: 'FeatureCollection',
-                        features: []
-                    }
+                    data: { type: 'FeatureCollection', features: [] }
+                });
+
+                this.map.addSource('tiles', {
+                    type: 'geojson',
+                    data: { type: 'FeatureCollection', features: [] }
                 });
 
                 this.map.addLayer({
@@ -105,9 +139,19 @@ export default {
                         'fill-opacity': 0.8
                     }
                 });
+
+                this.map.addLayer({
+                    id: `tiles-poly`,
+                    type: 'line',
+                    source: 'tiles',
+                    paint: {
+                        'line-color': '#ffffff'
+                    }
+                });
             });
         },
         fitBounds: function() {
+            if (!this.isValid) return;
             this.map.fitBounds(this.bounds, {
                 padding: 100,
                 linear: true
