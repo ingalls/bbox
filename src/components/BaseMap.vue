@@ -5,15 +5,18 @@
                 "border border--red": !isValid,
             }'/>
 
-            <template v-if='showTiles'>
+            <template v-if='show.tiles'>
                 <input v-model='zoom' class='input w60 fr h36 ml6' placeholder='z' :class='{
                     "border border--red": !isTileValid,
                 }'/>
             </template>
-            <button @click='showTiles = !showTiles' class='btn btn--stroke round fr h36 ml6 px12'>
+            <button @click='show.tiles = !show.tiles' class='btn btn--stroke round fr h36 ml6 px12' :class='{
+                "color-gray": !show.tiles,
+                "color-green": show.tiles
+            }'>
                 <svg class='icon'><use xlink:href='#icon-tileset'/></svg>
             </button>
-            <button @click='fitBounds' class='btn btn--stroke round fr h36 ml6 px12'>
+            <button @click='fitBounds' class='btn btn--stroke round fr h36 ml6 px12 color-gray color-green-on-hover'>
                 <svg class='icon'><use xlink:href='#icon-fullscreen'/></svg>
             </button>
         </div>
@@ -32,7 +35,9 @@ export default {
     name: 'BaseMap',
     data: function() {
         return {
-            showTiles: false,
+            show: {
+                tiles: false,
+            },
             zoom: 0,
             initial: true,
             rawbounds: '',
@@ -57,8 +62,8 @@ export default {
         }
     },
     watch: {
-        showTiles: function() {
-            if (!this.showtiles) {
+        'show.tiles': function() {
+            if (!this.show.tiles) {
                 this.map.getSource('tiles').setData({
                     type: 'geojson',
                     data: { type: 'FeatureCollection', features: [] }
@@ -66,6 +71,7 @@ export default {
             }
         },
         zoom: function() {
+            console.error(this.bounds)
             const tiles = tc.geojson(poly(this.bounds).geometry, {
                 min_zoom: this.zoom,
                 max_zoom: this.zoom
