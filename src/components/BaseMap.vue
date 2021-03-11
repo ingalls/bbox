@@ -1,7 +1,12 @@
 <template>
     <div class='col col--12 w-full absolute top bottom'>
         <div class='absolute top left z1 bg-white px12 py12'>
-            <input v-model='bounds' class='input w600' placeholder='GeoJSON Bounding Box'/>
+            <input :disabled='!map' v-model='rawbounds' class='input w600 fl' placeholder='GeoJSON Bounding Box' :class='{
+                "border border--red": !isValid,
+            }'/>
+            <button @click='fitBounds' class='btn btn--stroke round fr h36 ml6 px12'>
+                <svg class='icon'><use xlink:href='#icon-fullscreen'/></svg>
+            </button>
         </div>
 
         <div id="map" class='w-full h-full'></div>
@@ -17,33 +22,54 @@ export default {
     name: 'BaseMap',
     data: function() {
         return {
-            bounds: '',
+            initial: true,
+            rawbounds: '',
+            bounds: [],
             map: ''
         }
     },
-    watch: {
-        bounds: function() {
-            if (!this.map) return;
+    computed: {
+        isValid: function() {
+            if (this.initial) return true;
 
-            const bounds = this.bounds.trim().split(',').map((bound) => {
+            const bounds = this.rawbounds.trim().split(',').map((bound) => {
                 return Number(bound);
             });
 
-            if (bounds.length === 4) {
+            if (bounds.length !== 4) return false;
+
+            return true;
+        }
+    },
+    watch: {
+        rawbounds: function() {
+            this.initial = false;
+            if (!this.isValid) return;
+
+            this.bounds = this.rawbounds.trim().split(',').map((bound) => {
+                return Number(bound);
+            });
+
+            if (this.bounds.length === 4) this.rawbounds = this.bounds.join(', ');
+        },
+        bounds: function() {
+            if (!this.map) return;
+
+            if (this.isValid) {
                 this.map.getSource('bounds').setData({
                     type: 'Feature',
                     properties: {},
-                    geometry: poly(bounds).geometry
+                    geometry: poly(this.bounds).geometry
                 });
 
-                this.map.fitBounds(bounds)
+                this.fitBounds();
             } else {
                 this.map.getSource('bounds').setData({
                     type: 'FeatureCollection',
                     features: []
                 });
             }
-            this.$emit('bounds', bounds);
+            this.$emit('bounds', this.bounds);
         }
     },
     mounted: function() {
@@ -80,6 +106,12 @@ export default {
                     }
                 });
             });
+        },
+        fitBounds: function() {
+            this.map.fitBounds(this.bounds, {
+                padding: 100,
+                linear: true
+            })
         }
     }
 }
