@@ -998,10 +998,25 @@
   dependencies:
     "@turf/helpers" "^6.3.0"
 
+"@turf/centroid@^6.3.0":
+  "integrity" "sha512-7KTyqhUEqXDoyR/nf/jAXiW8ZVszEnrp5XZkgYyrf2GWdSovSO0iCN1J3bE2jkJv7IWyeDmGYL61GGzuTSZS2Q=="
+  "resolved" "https://registry.npmjs.org/@turf/centroid/-/centroid-6.3.0.tgz"
+  "version" "6.3.0"
+  dependencies:
+    "@turf/helpers" "^6.3.0"
+    "@turf/meta" "^6.3.0"
+
 "@turf/helpers@^6.3.0":
   "integrity" "sha512-kr6KuD4Z0GZ30tblTEvi90rvvVNlKieXuMC8CTzE/rVQb0/f/Cb29zCXxTD7giQTEQY/P2nRW23wEqqyNHulCg=="
   "resolved" "https://registry.npmjs.org/@turf/helpers/-/helpers-6.3.0.tgz"
   "version" "6.3.0"
+
+"@turf/meta@^6.3.0":
+  "integrity" "sha512-qBJjaAJS9H3ap0HlGXyF/Bzfl0qkA9suafX/jnDsZvWMfVLt+s+o6twKrXOGk5t7nnNON2NFRC8+czxpu104EQ=="
+  "resolved" "https://registry.npmjs.org/@turf/meta/-/meta-6.3.0.tgz"
+  "version" "6.3.0"
+  dependencies:
+    "@turf/helpers" "^6.3.0"
 
 "@types/anymatch@*":
   "integrity" "sha512-/+CRPXpBDpo2RK9C68N3b2cOvO0Cf5B9aPijHsoDQTHivnGSObdOF2BRQOYjojWTDy6nQvMjmqRXIxH55VjxxA=="
