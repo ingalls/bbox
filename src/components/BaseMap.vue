@@ -59,7 +59,7 @@ export default {
     watch: {
         showTiles: function() {
             if (!this.showtiles) {
-                this.map.addSource('tiles', {
+                this.map.getSource('tiles').setData({
                     type: 'geojson',
                     data: { type: 'FeatureCollection', features: [] }
                 });
@@ -70,8 +70,6 @@ export default {
                 min_zoom: this.zoom,
                 max_zoom: this.zoom
             });
-
-            console.error(tiles)
             this.map.getSource('tiles').setData(tiles);
         },
         rawbounds: function() {
