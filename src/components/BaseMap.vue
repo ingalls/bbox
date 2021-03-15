@@ -5,6 +5,9 @@
                 "border border--red": !isValid,
             }'/>
 
+            <button :disabled='!ready' @click='start_draw' class='btn btn--stroke round fr h36 ml6 px12 color-gray color-green-on-hover'>
+                <svg class='icon'><use xlink:href='#icon-pencil'/></svg>
+            </button>
             <button :disabled='!ready || !isValid' @click='show.tiles = !show.tiles' class='dropdown btn btn--stroke round fr h36 ml6 px12' :class='{
                 "color-gray": !show.tiles,
                 "color-green": show.tiles
@@ -35,8 +38,12 @@
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import poly from '@turf/bbox-polygon';
+import bbox from '@turf/bbox';
 import centroid from '@turf/centroid';
 import tc from '@mapbox/tile-cover';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import DrawRectangle from 'mapbox-gl-draw-rectangle-mode';
 
 export default {
     name: 'BaseMap',
@@ -51,6 +58,7 @@ export default {
             rawbounds: '',
             bounds: [],
             map: false,
+            draw: false,
             ready: false
         }
     },
@@ -101,6 +109,10 @@ export default {
         this.init();
     },
     methods: {
+        start_draw() {
+            this.rawbounds = '';
+            this.draw.changeMode('draw_rectangle');
+        },
         tiles() {
             const tiles = tc.geojson(poly(this.bounds).geometry, {
                 min_zoom: parseInt(this.zoom),
@@ -125,7 +137,7 @@ export default {
         },
         compute_bounds() {
             this.initial = false;
-            if (!this.isValid) return;
+            if (!this.isValid) return this.bounds = false;
 
             this.bounds = this.rawbounds.trim().split(',').map((bound) => {
                 return Number(bound);
@@ -161,7 +173,21 @@ export default {
                 style: 'mapbox://styles/mapbox/light-v9'
             });
 
+            const modes = MapboxDraw.modes;
+            modes.draw_rectangle = DrawRectangle
+            this.draw = new MapboxDraw({
+                displayControlsDefault: false,
+                modes: modes
+            });
+
+            this.map.addControl(this.draw, 'bottom-right');
             this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+
+            this.map.on('draw.create', (e) => {
+                this.rawbounds = bbox(e.features[0]).join(',');
+                this.draw.deleteAll();
+
+            });
 
             this.map.on('load', () => {
                 for (const layer of ['bounds', 'tiles', 'tiles-centroid']) {
