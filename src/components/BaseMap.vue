@@ -5,16 +5,22 @@
                 "border border--red": !isValid,
             }'/>
 
-            <template v-if='show.tiles'>
-                <input v-model='zoom' class='input w60 fr h36 ml6' placeholder='z' :class='{
-                    "border border--red": !isTileValid,
-                }'/>
-            </template>
-            <button :disabled='!ready || !isValid' @click='show.tiles = !show.tiles' class='btn btn--stroke round fr h36 ml6 px12' :class='{
+            <button :disabled='!ready || !isValid' @click='show.tiles = !show.tiles' class='dropdown btn btn--stroke round fr h36 ml6 px12' :class='{
                 "color-gray": !show.tiles,
                 "color-green": show.tiles
             }'>
                 <svg class='icon'><use xlink:href='#icon-tileset'/></svg>
+
+                <div class='dropdown-content round bg-transparent'>
+                    <div class='triangle--u triangle color-gray ml12'></div>
+
+                    <div class='bg-white border border--gray round shadow px6 py3'>
+                        <label>Zoom</label>
+                        <input v-model='zoom' class='input w60 h36' placeholder='z' :class='{
+                            "border border--red": !isTileValid,
+                        }'/>
+                    </div>
+                </div>
             </button>
             <button :disabled='!ready || !isValid' @click='fitBounds' class='btn btn--stroke round fr h36 ml6 px12 color-gray color-green-on-hover'>
                 <svg class='icon'><use xlink:href='#icon-fullscreen'/></svg>
@@ -211,3 +217,26 @@ export default {
     }
 }
 </script>
+
+<style>
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.shadow {
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 36px;
+    left: 0px;
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+</style>
