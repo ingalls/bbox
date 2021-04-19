@@ -113,7 +113,7 @@ export default {
             this.show_bounds();
         },
         epsg: function() {
-            this.rawbounds = '';
+            if (!this.bounds.length) return;
 
             if (this.epsg === 'EPSG:4326') {
                 this.rawbounds = bbox(toWgs84(poly(this.bounds))).join(',')
@@ -124,8 +124,8 @@ export default {
     },
     mounted: function() {
         if (window.location.hash && decodeURIComponent(window.location.hash.replace('#', '')).split(':').length) {
+            this.epsg = 'EPSG:' + decodeURIComponent(window.location.hash.replace('#', '')).split(':')[0];
             this.rawbounds = decodeURIComponent(window.location.hash.replace('#', '')).split(':')[1];
-            this.epsg = 'EPSG:' + decodeURIComponent(window.location.hash.replace('#', '')).split(':')[0]
         } else {
             window.location.hash = '';
         }
