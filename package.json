@@ -8,24 +8,25 @@
         "lint": "vue-cli-service lint"
     },
     "dependencies": {
-        "@mapbox/assembly": "^0.25.0",
+        "@mapbox/assembly": "^0.26.0",
         "@mapbox/mapbox-gl-draw": "^1.2.2",
         "@mapbox/tile-cover": "^3.0.2",
         "@turf/bbox": "^6.3.0",
         "@turf/bbox-polygon": "^6.3.0",
         "@turf/centroid": "^6.3.0",
-        "core-js": "^3.6.5",
-        "mapbox-gl": "^2.0.1",
+        "@turf/projection": "^6.3.0",
+        "core-js": "^3.10.1",
+        "mapbox-gl": "^2.2.0",
         "mapbox-gl-draw-rectangle-mode": "^1.0.4",
         "vue": "^2.6.11"
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "^4.5.0",
-        "@vue/cli-plugin-eslint": "^4.5.0",
-        "@vue/cli-service": "^4.5.0",
+        "@vue/cli-plugin-babel": "^4.5.12",
+        "@vue/cli-plugin-eslint": "^4.5.12",
+        "@vue/cli-service": "^4.5.12",
         "babel-eslint": "^10.1.0",
-        "eslint": "^6.7.2",
-        "eslint-plugin-vue": "^6.2.2",
+        "eslint": "^7.24.0",
+        "eslint-plugin-vue": "^7.9.0",
         "vue-template-compiler": "^2.6.11"
     },
     "eslintConfig": {
