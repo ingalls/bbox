@@ -5,6 +5,13 @@
                 "border border--red": !isValid,
             }'/>
 
+            <div class='select-container ml6'>
+                <select class='h36' v-model='epsg'>
+                    <option>EPSG:4326</option>
+                    <option>EPSG:3857</option>
+                </select>
+            </div>
+
             <button :disabled='!ready' @click='start_draw' class='btn btn--stroke round fr h36 ml6 px12 color-gray color-green-on-hover'>
                 <svg class='icon'><use xlink:href='#icon-pencil'/></svg>
             </button>
@@ -39,6 +46,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import poly from '@turf/bbox-polygon';
 import bbox from '@turf/bbox';
+import { toWgs84, toMercator } from '@turf/projection';
 import centroid from '@turf/centroid';
 import tc from '@mapbox/tile-cover';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
@@ -53,6 +61,7 @@ export default {
                 tiles: false,
                 labels: false
             },
+            epsg: 'EPSG:4326',
             zoom: 0,
             initial: true,
             rawbounds: '',
@@ -102,19 +111,41 @@ export default {
         bounds: function() {
             if (!this.ready) return;
             this.show_bounds();
+        },
+        epsg: function() {
+            if (!this.bounds.length) return;
+
+            if (this.epsg === 'EPSG:4326') {
+                this.rawbounds = bbox(toWgs84(poly(this.bounds))).join(',')
+            } else if (this.epsg === 'EPSG:3857') {
+                this.rawbounds = bbox(toMercator(poly(this.bounds))).join(',')
+            }
         }
     },
     mounted: function() {
-        if (window.location.hash) this.rawbounds = decodeURIComponent(window.location.hash.replace('#', ''));
+        if (window.location.hash && decodeURIComponent(window.location.hash.replace('#', '')).split(':').length) {
+            this.epsg = 'EPSG:' + decodeURIComponent(window.location.hash.replace('#', '')).split(':')[0];
+            this.rawbounds = decodeURIComponent(window.location.hash.replace('#', '')).split(':')[1];
+        } else {
+            window.location.hash = '';
+        }
+
         this.init();
     },
     methods: {
+        convert() {
+            if (this.epsg === 'EPSG:4326') {
+                return this.bounds;
+            } else {
+                return bbox(toWgs84(poly(this.bounds)))
+            }
+        },
         start_draw() {
-            this.rawbounds = '';
+            this.epsg = 'EPSG:4326';
             this.draw.changeMode('draw_rectangle');
         },
         tiles() {
-            const tiles = tc.geojson(poly(this.bounds).geometry, {
+            const tiles = tc.geojson(poly(this.convert()).geometry, {
                 min_zoom: parseInt(this.zoom),
                 max_zoom: parseInt(this.zoom)
             });
@@ -144,14 +175,14 @@ export default {
             });
 
             if (this.bounds.length === 4) this.rawbounds = this.bounds.join(', ');
-            window.location.hash = this.rawbounds;
+            window.location.hash = this.epsg.replace('EPSG:', '') + ':' + this.rawbounds;
         },
         show_bounds() {
             if (this.isValid) {
                 this.map.getSource('bounds').setData({
                     type: 'Feature',
                     properties: {},
-                    geometry: poly(this.bounds).geometry
+                    geometry: poly(this.convert()).geometry
                 });
 
                 this.fitBounds();
@@ -161,7 +192,7 @@ export default {
                     features: []
                 });
             }
-            this.$emit('bounds', this.bounds);
+            this.$emit('bounds', this.convert());
 
         },
         init: function() {
@@ -235,7 +266,7 @@ export default {
         },
         fitBounds: function() {
             if (!this.isValid) return;
-            this.map.fitBounds(this.bounds, {
+            this.map.fitBounds(this.convert(), {
                 padding: 100,
                 linear: true
             })
